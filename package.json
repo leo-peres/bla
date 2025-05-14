@@ -1,0 +1,12 @@
+{
+  "name": "com.bla.sharedscripts",
+  "version": "1.0.0",
+  "displayName": "Shared Scripts",
+  "description": "A collection of shared scripts used across multiple Unity projects.",
+  "unity": "6000.1",
+  "author": {
+    "name": "bla",
+    "url": "https://github.com/leo-peres"
+  }
+}
+
