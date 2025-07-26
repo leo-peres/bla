@@ -1,78 +1,81 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class DraggableManipulator : PointerManipulator {
+public class DraggableManipulator : Manipulator {
 
-    private Vector2 startMousePosition;
-    private Vector2 startElementPosition;
-    private bool dragging;
+    private VisualElement _handler;
+    private VisualElement _target;
 
-    public DraggableManipulator() {
-        activators.Add(new ManipulatorActivationFilter { button = MouseButton.LeftMouse });
+    private Vector2 _startMousePosition;
+    private Vector2 _startElementPosition;
+
+    private bool _isDragging;
+
+    public DraggableManipulator(VisualElement handler = null) {
+        _handler = handler;
     }
 
     protected override void RegisterCallbacksOnTarget() {
-        target.RegisterCallback<PointerDownEvent>(OnPointerDown);
-        target.RegisterCallback<PointerMoveEvent>(OnPointerMove);
-        target.RegisterCallback<PointerUpEvent>(OnPointerUp);
+
+        _target = target;
+
+        var handler = _handler ?? _target;
+
+        handler.RegisterCallback<MouseDownEvent>(OnMouseDown);
+        handler.RegisterCallback<MouseMoveEvent>(OnMouseMove);
+        handler.RegisterCallback<MouseUpEvent>(OnMouseOut);
+
     }
 
     protected override void UnregisterCallbacksFromTarget() {
-        target.UnregisterCallback<PointerDownEvent>(OnPointerDown);
-        target.UnregisterCallback<PointerMoveEvent>(OnPointerMove);
-        target.UnregisterCallback<PointerUpEvent>(OnPointerUp);
+        var handler = _handler ?? _target;
+        handler.UnregisterCallback<MouseDownEvent>(OnMouseDown);
+        handler.UnregisterCallback<MouseMoveEvent>(OnMouseMove);
+        handler.UnregisterCallback<MouseUpEvent>(OnMouseOut);
     }
 
-    private void OnPointerDown(PointerDownEvent evt) {
+    private void OnMouseDown(MouseDownEvent evt) {
 
-        if(!CanStartManipulation(evt))
-            return;
+        if(evt.button == 0) {
 
-        dragging = true;
-        startMousePosition = evt.position;
-        startElementPosition = new Vector2(target.resolvedStyle.left, target.resolvedStyle.top);
+            _startMousePosition = evt.mousePosition;
+            _startElementPosition = new Vector2(_target.resolvedStyle.left, _target.resolvedStyle.top);
+            _isDragging = true;
 
-        target.style.height = target.resolvedStyle.height;
-        target.style.width = target.resolvedStyle.width;
+            var handler = _handler ?? _target;
+            handler.CaptureMouse();
+            evt.StopPropagation();
 
-        /*
-        VisualElement root = target;
-        while(!root.ClassListContains("unity-ui-document__root"))
-            root = root.parent;
-
-        root.Add(target);
-        */
-
-        target.CapturePointer(evt.pointerId);
-        evt.StopPropagation();
+        }
 
     }
 
-    private void OnPointerMove(PointerMoveEvent evt) {
+    private void OnMouseMove(MouseMoveEvent evt) {
 
-        if(!dragging || !target.HasPointerCapture(evt.pointerId))
-            return;
+        if(_isDragging) {
 
-        Vector2 delta = new Vector2(evt.position.x, evt.position.y) - startMousePosition;
+            Vector2 delta = evt.mousePosition - _startMousePosition;
 
-        target.style.position = Position.Absolute;
-        target.style.left = startElementPosition.x + delta.x;
-        target.style.top = startElementPosition.y + delta.y;
+            _target.style.left = _startElementPosition.x + delta.x;
+            _target.style.top = _startElementPosition.y + delta.y;
 
-        target.BringToFront();
-
-        evt.StopPropagation();
+            evt.StopPropagation();
+        }
 
     }
 
-    private void OnPointerUp(PointerUpEvent evt) {
+    private void OnMouseOut(MouseUpEvent evt) {
 
-        if(!CanStopManipulation(evt))
-            return;
+        if(_isDragging && evt.button == 0) {
 
-        dragging = false;
-        target.ReleasePointer(evt.pointerId);
-        evt.StopPropagation();
-   
+            _isDragging = false;
+
+            var handler = _handler ?? _target;
+            handler.ReleaseMouse();
+            evt.StopPropagation();
+
+        }
+
     }
+    
 }
