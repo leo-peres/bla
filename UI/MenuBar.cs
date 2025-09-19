@@ -21,7 +21,7 @@ namespace bla.UI {
             public MenuItem(string label) {
                 this.label = label;
                 btn = new Button() { text = label };
-                btn.AddToClassList("top-bar-btn");
+                btn.AddToClassList("menu-bar-btn");
                 dropdownContent = new List<Button>();
             }
 
@@ -40,6 +40,8 @@ namespace bla.UI {
         private VisualElement rootContainer;
         private bool active;
 
+        public readonly List<StyleSheet> dropdownStyleSheets = new();
+
         public MenuBar() {
             Initialize(new List<string>(), false);
         }
@@ -50,11 +52,29 @@ namespace bla.UI {
 
         private void Initialize(List<string> labels, bool labelsListReady) {
 
-            if(!labelsListReady && !string.IsNullOrEmpty(LabelsRaw))
-                labels = new List<string>(LabelsRaw.Split(","));
+            if(!labelsListReady) {
+                RegisterCallback<AttachToPanelEvent>(evt => {
+                    if(!string.IsNullOrEmpty(LabelsRaw))
+                        labels = new List<string>(LabelsRaw.Split(","));
+                    InitializeLabelsList(labels);
+                });
+            }
+            else
+                InitializeLabelsList(labels);
+
+            active = false;
+
+            RegisterCallback<AttachToPanelEvent>(evt => {
+                rootContainer = this;
+                while(rootContainer.parent != null && rootContainer.parent.parent != null)
+                    rootContainer = rootContainer.parent;
+            });
+
+        }
+
+        private void InitializeLabelsList(List<string> labels) {
 
             menuItems = new List<MenuItem>();
-            active = false;
 
             foreach(string label in labels) {
 
@@ -72,12 +92,6 @@ namespace bla.UI {
 
             }
 
-            RegisterCallback<AttachToPanelEvent>(evt => {
-                rootContainer = this;
-                while(rootContainer.parent != null && rootContainer.parent.parent != null)
-                    rootContainer = rootContainer.parent;
-            });
-
         }
 
         private void OpenDropdown(MenuItem item) {
@@ -86,14 +100,15 @@ namespace bla.UI {
 
             activeDropdown = new DropdownMenuWithOverlay(item.label, item.dropdownContent);
 
+            foreach(var styleSheet in dropdownStyleSheets)
+                activeDropdown.styleSheets.Add(styleSheet);
+
             activeDropdown.menu.style.position = Position.Absolute;
             activeDropdown.menu.style.left = item.btn.worldBound.xMin;
-            activeDropdown.menu.style.top = item.btn.worldBound.yMax + 2;
+            activeDropdown.menu.style.top = item.btn.worldBound.yMax;
 
             foreach(Button btn in activeDropdown.menu.items)
-                btn.clicked += CloseDropdown;
-
-            activeDropdown.menu.AddToClassList("dark-bg");
+                    btn.clicked += CloseDropdown;
 
             Clickable clickable = new Clickable(CloseDropdown);
             activeDropdown.SetClickable(clickable);
@@ -114,8 +129,11 @@ namespace bla.UI {
 
             });
 
-            rootContainer.Add(activeDropdown.overlay);
-            rootContainer.Add(activeDropdown.menu);
+            //rootContainer.Add(activeDropdown.overlay);
+            //rootContainer.Add(activeDropdown.menu);
+
+            rootContainer.Add(activeDropdown);
+
 
             active = true;
 
@@ -125,8 +143,12 @@ namespace bla.UI {
 
 
             if(activeDropdown != null) {
+                /*
                 activeDropdown.overlay.RemoveFromHierarchy();
                 activeDropdown.menu.RemoveFromHierarchy();
+                activeDropdown = null;
+                */
+                activeDropdown.RemoveFromHierarchy();
                 activeDropdown = null;
             }
 

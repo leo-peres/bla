@@ -26,4 +26,25 @@ public static class UIUtility {
         overlayElement.AddManipulator(new Clickable(() => overlayElement.parent.RemoveFromHierarchy()));
     }
 
+    public static void ApplyEqualPadding(VisualElement element, float padding) {
+        element.style.paddingBottom = padding;
+        element.style.paddingLeft = padding;
+        element.style.paddingRight = padding;
+        element.style.paddingTop = padding;
+    }
+
+    public static void ApplyEqualBorderWidth(VisualElement element, float borderWidth) {
+        element.style.borderBottomWidth = borderWidth;
+        element.style.borderLeftWidth = borderWidth;
+        element.style.borderRightWidth = borderWidth;
+        element.style.borderTopWidth = borderWidth;
+    }
+
+    public static void ApplyEqualMargin(VisualElement element, float margin) {
+        element.style.marginBottom = margin;
+        element.style.marginLeft = margin;
+        element.style.marginRight = margin;
+        element.style.marginTop = margin;
+    }
+
 }

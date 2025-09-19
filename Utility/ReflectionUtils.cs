@@ -27,4 +27,19 @@ public static class ReflectionUtils {
 
     }
 
+    public static MethodInfo GetGenericMethod(Type type, string methodName, Type genericType, int parameterLength = 0, BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance) {
+
+        MethodInfo method = type
+            .GetMethods(bindingFlags)
+            .FirstOrDefault(m =>
+                m.Name == methodName &&
+                m.IsGenericMethodDefinition &&
+                m.GetParameters().Length == parameterLength
+            );
+
+        return method?.GetGenericMethodDefinition().MakeGenericMethod(genericType);
+
+    }
+
+
 }

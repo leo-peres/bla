@@ -8,10 +8,10 @@ public class FloatingPanel : VisualElement {
     public FloatingPanel() {
 
         topBar = new VisualElement();
-        topBar.AddToClassList("floating_panel_top_bar");
+        topBar.AddToClassList("floating-panel-top-bar");
 
         content = new VisualElement();
-        content.AddToClassList("floating_panel_content");
+        content.AddToClassList("floating-panel-content");
 
         style.position = Position.Absolute;
 

@@ -51,6 +51,13 @@ public class DropdownMenuWithOverlay : VisualElement {
     public VisualElement overlay {get; private set;}
 
     private Clickable clickable;
+    private RightClickable rightClickable;
+
+    public DropdownMenuWithOverlay() {
+        var items = new List<Button>();
+        menu = new DropdownMenu("", items);
+        InitializeDropdownWithOverlay(items);
+    }
 
     public DropdownMenuWithOverlay(string label, List<Button> items) {
         menu = new DropdownMenu(label, items);
@@ -70,7 +77,12 @@ public class DropdownMenuWithOverlay : VisualElement {
             RemoveFromHierarchy();
         });
 
+        rightClickable = new RightClickable(() => {
+            RemoveFromHierarchy();
+        });
+
         overlay.AddManipulator(clickable);
+        overlay.AddManipulator(rightClickable);
 
         ApplyStyles();
 

@@ -11,7 +11,7 @@ using Button = UnityEngine.UIElements.Button;
 namespace bla.UI {
 
     [UxmlElement]
-    public partial class DropdownField : VisualElement {
+    public partial class DropdownField : VisualElement, INotifyValueChanged<string> {
 
         [UxmlAttribute("choices")]
         public string ChoicesRaw { get; set; }
@@ -21,10 +21,24 @@ namespace bla.UI {
 
         public Action<string> OnValueChanged;
 
-        public string value;
+        private string _value;
+        public string value {
+            get => _value;
+            set {
+
+                var previous = _value;
+                _value = value;
+
+                using(var evt = ChangeEvent<string>.GetPooled(previous, _value)) {
+                    evt.target = this;
+                    SendEvent(evt);
+                }
+
+            }
+        }
 
         public Button dropdownBtn { get; private set; }
-        public DropdownMenuWithOverlay dropdownOverlay { get; private set; }
+        private DropdownMenuWithOverlay dropdownOverlay;
 
         public VisualElement rootContainer { get; private set; }
 
@@ -56,7 +70,7 @@ namespace bla.UI {
             dropdownBtn = new Button();
             if(selected >= 0)
                 dropdownBtn.text = this.choices[selected];
-            dropdownBtn.AddToClassList("dropdown-btn");
+            dropdownBtn.AddToClassList("dropdown-field-btn");
 
             dropdownBtn.RegisterCallback<ClickEvent>(evt => ToggleDropdown());
 
@@ -77,16 +91,16 @@ namespace bla.UI {
         public void SetChoices(List<string> newChoices, int defaultChoice = 0) {
 
             selected = -1;
-            value = "";
+            _value = "";
             choices = newChoices ?? new List<string>();
 
             if(choices.Count > 0 && defaultChoice < choices.Count && defaultChoice >= 0) {
                 selected = defaultChoice;
-                value = choices[defaultChoice];
+                _value = choices[defaultChoice];
             }
             else if(choices.Count > 0) {
                 selected = 0;
-                value = choices[0];
+                _value = choices[0];
             }
 
             if(selected >= 0 && dropdownBtn != null)
@@ -172,6 +186,9 @@ namespace bla.UI {
 
         }
 
+        public void SetValueWithoutNotify(string newValue) {
+            _value = newValue;
+        }
     }
 
 }
