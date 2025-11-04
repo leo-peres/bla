@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -9,6 +10,9 @@ public class ModalDialog : VisualElement {
 
     public VisualElement overlay;
     public VisualElement content;
+
+    public event Action OnOpen;
+    public event Action OnClose;
 
     public ModalDialog(VisualElement parent) {
         ConstructorCommon(parent, "");
@@ -41,12 +45,12 @@ public class ModalDialog : VisualElement {
     public void Open() {
         UIUtility.CenterElement(content, new Vector2(content.resolvedStyle.width, content.resolvedStyle.height));
         parentElement.Add(this);
+        OnOpen?.Invoke();
     }
 
     public void Close() {
-        //parentElement.Remove(content);
-        //parentElement.Remove(overlay);
         RemoveFromHierarchy();
+        OnClose?.Invoke();
     }
 
 

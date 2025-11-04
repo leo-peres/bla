@@ -10,7 +10,7 @@ public class SingleDoubleClickManipulator : PointerManipulator{
 
     private bool singleClickPending;
 
-    public SingleDoubleClickManipulator(Action<ClickEvent> onSingleClick, Action<ClickEvent> onDoubleClick, float doubleClickDelay = 0.25f) {
+    public SingleDoubleClickManipulator(Action<ClickEvent> onSingleClick, Action<ClickEvent> onDoubleClick, float doubleClickDelay = 0.05f) {
         this.onSingleClick = onSingleClick;
         this.onDoubleClick = onDoubleClick;
         this.doubleClickDelay = doubleClickDelay;

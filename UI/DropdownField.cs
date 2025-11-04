@@ -19,7 +19,7 @@ namespace bla.UI {
         [UxmlAttribute("default-choice")]
         public int DefaultChoice { get; set; } = 0;
 
-        public Action<string> OnValueChanged;
+        public event Action<string> OnValueChanged;
 
         private string _value;
         public string value {
@@ -172,6 +172,11 @@ namespace bla.UI {
         }
 
         public void ChangeSelected(string newSelected) {
+            ChangeSelectedWithoutNotify(newSelected);
+            OnValueChanged?.Invoke(newSelected);
+        }
+
+        public void ChangeSelectedWithoutNotify(string newSelected) {
 
             int index = choices.FindIndex(x => x == newSelected);
 
@@ -179,10 +184,9 @@ namespace bla.UI {
                 selected = index;
                 dropdownBtn.text = newSelected;
                 value = newSelected;
-                OnValueChanged?.Invoke(newSelected);
             }
 
-            ToggleDropdown();
+            CloseDropdown();   
 
         }
 

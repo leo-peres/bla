@@ -18,6 +18,8 @@ public class SortableList : VisualElement {
 
         public Dictionary<string, string> rowItemsMap = new();
 
+        public bool selected = false;
+
         public SortableListRow(int index, List<(string, string)> columnNamesValues) {
 
             this.index = index;
@@ -105,12 +107,12 @@ public class SortableList : VisualElement {
         var row = new SortableListRow(rows.Count, colNamesValues);
         rows.Insert(index, row);
 
-        var singleDoubleManipulator = new SingleDoubleClickManipulator(
-            evt => OnRowSingleClick?.Invoke(index),
-            evt => OnRowDoubleClick?.Invoke(index)
-        );
-
-        row.AddManipulator(singleDoubleManipulator);
+        row.RegisterCallback<ClickEvent>(evt => {
+            if(evt.clickCount == 1)
+                OnRowSingleClick?.Invoke(index);
+            else if(evt.clickCount == 2)
+                OnRowDoubleClick?.Invoke(index);
+        });
 
         Refresh();
 
@@ -175,6 +177,34 @@ public class SortableList : VisualElement {
         Refresh();
     }
 
+    public void SelectRow(int index) {
+        int i = rows.FindIndex(r => r.index == index);
+        if(i >= 0) {
+            var row = rows[i];
+            row.EnableInClassList("sortable-list-row-selected", true);
+            row.selected = true;
+        }
+    }
+
+    public void DeselectRow(int index) {
+        int i = rows.FindIndex(r => r.index == index);
+        if(i >= 0) {
+            var row = rows[i];
+            row.EnableInClassList("sortable-list-row-selected", false);
+            row.selected = false;
+        }
+    }
+
+    public int GetLastSelected() {
+        for(int i = rows.Count - 1; i >= 0; i--) {
+            var row = rows[i];
+            if(row.selected) {
+                return row.index;
+            }
+        }
+        return -1;
+    }
+
     public void Reset() {
         rows.Clear();
         Refresh();
@@ -191,6 +221,8 @@ public class SortableListControl<T> {
 
     private int sortedColumn = -1;
     private bool ascending = true;
+
+    public MultipleSelectionList selectedRows = new();
 
     public event Action<T> OnSingleClick;
     public event Action<T> OnDoubleClick;
@@ -211,6 +243,26 @@ public class SortableListControl<T> {
 
         view.OnRowSingleClick += (i) => OnSingleClick?.Invoke(items[i]);
         view.OnRowDoubleClick += (i) => OnDoubleClick?.Invoke(items[i]);
+
+        view.OnRowSingleClick += (i) => {
+
+            var selected = new List<int>();
+            var deselected = new List<int>();
+
+            if(Input.GetKey(KeyCode.LeftControl))
+                (selected, deselected) = selectedRows.AddSingle(i);
+            else if(Input.GetKey(KeyCode.LeftShift))
+                (selected, deselected) = selectedRows.AddChain(i);
+            else
+                (selected, deselected) = selectedRows.AddUnique(i);
+
+            foreach(int j in selected)
+                view.SelectRow(j);
+
+            foreach(int j in deselected)
+                view.DeselectRow(j);
+
+        };
 
     }
 
@@ -239,6 +291,16 @@ public class SortableListControl<T> {
             view?.AddRow(values);
         }
 
+    }
+
+    public T GetLastSelected() {
+        int index = view.GetLastSelected();
+        if(index == -1) {
+            return default;
+        }
+        else {
+            return items[index];
+        }
     }
 
 }

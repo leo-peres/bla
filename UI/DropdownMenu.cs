@@ -26,6 +26,7 @@ public class DropdownMenu : VisualElement {
 
         foreach(Button item in items) {
             Add(item);
+            item.AddToClassList("dropdown-menu-btn");
         }
 
         ApplyStyleClasses();
@@ -36,7 +37,6 @@ public class DropdownMenu : VisualElement {
 
     private void ApplyStyleClasses() {
         AddToClassList("dropdown-main");
-        //AddToClassList("dark-bg");
     }
 
     public void AddClass(string newClass) {

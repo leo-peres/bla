@@ -17,9 +17,22 @@ public class MultipleSelectionList {
 
     public (List<int>, List<int>) AddUnique(int index) {
 
-        List<int> selectedItems = new List<int> { index };
-        List<int> deselectedItems = new List<int>(selectedSet);
-        
+        List<int> selectedItems;
+        List<int> deselectedItems;
+
+        if(selectedSet.Contains(index)) {
+            selectedItems = new List<int>();
+            deselectedItems = new List<int>();
+            foreach(int i in selectedSet) {
+                if(i != index)
+                    deselectedItems.Add(i);
+            }
+        }
+        else {
+            selectedItems = new List<int> { index };
+            deselectedItems = new List<int>(selectedSet);
+        }
+
         selectedSet.Clear();
         selectedSet.Add(index);
         lastTouchedIndex = index;
